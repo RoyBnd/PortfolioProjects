@@ -1,3 +1,93 @@
+/*
+	Dannys Diner - Case Study 1
+	This case-study SQL project is made based on the data provided in 
+	this link mentioned below:
+	https://8weeksqlchallenge.com/case-study-1/
+	
+	Steps:
+	1. Create Database
+	2. Create Tables and Enter Table Data
+	3. Case Study Questions - Answers
+	
+*/
+
+
+-- create database if it doesn't exists
+IF NOT EXISTS(SELECT * FROM sys.databases WHERE name = 'DannysDiner')
+	BEGIN
+		CREATE DATABASE DannysDiner
+	END;
+
+-----------------------------------------------------------------
+
+-- create tables (table data and dataypes were provided in the website)
+
+/*
+1. Sales Table:
+It captures all CustomerID level purchases with the corresponding 
+OrderDate and ProductID information for when and what menu items were ordered.
+*/
+--CREATE TABLE DannysDiner.dbo.Sales
+--(
+--    CustomerId VARCHAR(1),
+--    OrderDate DATE,
+--	ProductID INT
+--);
+
+--INSERT INTO DannysDiner.dbo.Sales
+--	VALUES
+--	  ('A', '2021-01-01', '1'),
+--	  ('A', '2021-01-01', '2'),
+--	  ('A', '2021-01-07', '2'),
+--	  ('A', '2021-01-10', '3'),
+--	  ('A', '2021-01-11', '3'),
+--	  ('A', '2021-01-11', '3'),
+--	  ('B', '2021-01-01', '2'),
+--	  ('B', '2021-01-02', '2'),
+--	  ('B', '2021-01-04', '1'),
+--	  ('B', '2021-01-11', '1'),
+--	  ('B', '2021-01-16', '3'),
+--	  ('B', '2021-02-01', '3'),
+--	  ('C', '2021-01-01', '3'),
+--	  ('C', '2021-01-01', '3'),
+--	  ('C', '2021-01-07', '3');
+
+/*
+2. Menu Table:
+It maps the ProductID to the actual ProductName and
+Price of each menu item.
+*/
+--CREATE TABLE DannysDiner.dbo.Menu
+--(
+--    ProductId INT,
+--    ProductName VARCHAR(5),
+--	Price INT
+--);
+
+--INSERT INTO DannysDiner.dbo.Menu
+--	VALUES
+--	  ('1', 'sushi', '10'),
+--	  ('2', 'curry', '15'),
+--	  ('3', 'ramen', '12');
+
+/*
+3. Members Table:
+It captures the JoinDate when a CustomerID 
+joined the beta version of the Danny’s Diner loyalty program.
+
+*/
+--CREATE TABLE DannysDiner.dbo.Members
+--(
+--    CustomerId VARCHAR(1),
+--    JoinDate DATE
+--);
+--INSERT INTO DannysDiner.dbo.Members
+--	VALUES
+--		('A', '2021-01-07'),
+--		('B', '2021-01-09');
+
+
+*********************************************************************
 
 --1: What is the total amount each customer spent at the restaurant?
 
@@ -93,40 +183,40 @@ FROM sales
 --8: What is the total items and amount spent for each member before they became a member?
 
 --A:
-select s.customer_id, 
+SELECT s.customer_id, 
        count(s.product_id) as TotalItems, 
 	   sum(me.price) as AmountSpent
-from sales s
+FROM sales s
 left join members m on s.customer_id = m.customer_id
 join menu me on me.product_id = s.product_id
 WHERE s.order_date < m.join_date OR m.join_date IS NULL
-group by s.customer_id
+GROUP BY s.customer_id
 
 --9: If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
 
 --A:
 ;with cte as (
-select s.customer_id, 
+SELECT s.customer_id, 
        me.product_name, 
 	   me.price,
 	   case 
 			when product_name in ('curry','ramen') then price*10
 			else price * 20
        end as Points
-from sales s
+FROM sales s
 left join members m on s.customer_id = m.customer_id
 join menu me on me.product_id = s.product_id
 )
-select cte.customer_id,
+SELECT cte.customer_id,
 	   sum(cte.Points) as TotalPoints
-from cte
-group by cte.customer_id
+FROM cte
+GROUP BY cte.customer_id
 
 --10: In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January? 
 
 --A:
 ;with cte as (
-select s.customer_id,
+SELECT s.customer_id,
        s.order_date,
 	   me.product_name,
 	   me.price,
@@ -139,12 +229,12 @@ select s.customer_id,
        end as Points
 
 
-from sales s
+FROM sales s
 join members m on s.customer_id = m.customer_id
 join menu me on me.product_id = s.product_id
 )
-select customer_id,
+SELECT customer_id,
        sum(cte.Points) as TotalPoints
-from cte
-group by cte.customer_id
+FROM cte
+GROUP BY cte.customer_id
 
